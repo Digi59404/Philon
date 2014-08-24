@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/digi/Projects/Philon/build/src/philonWindow.c
+glib.h
+-
+glib-object.h
+-
+granite.h
+-
+gtk/gtk.h
+-
+webkit2/webkit2.h
+-
+stdlib.h
+-
+string.h
+-
+
