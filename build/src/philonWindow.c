@@ -6,9 +6,11 @@
 #include <glib-object.h>
 #include <granite.h>
 #include <gtk/gtk.h>
-#include <webkit2/webkit2.h>
 #include <stdlib.h>
 #include <string.h>
+#include <webkit/webkit.h>
+#include <gdk/gdk.h>
+#include <gio/gio.h>
 
 
 #define PHILON_TYPE_PHILON_WINDOW (philon_philon_window_get_type ())
@@ -21,6 +23,16 @@
 typedef struct _philonphilonWindow philonphilonWindow;
 typedef struct _philonphilonWindowClass philonphilonWindowClass;
 typedef struct _philonphilonWindowPrivate philonphilonWindowPrivate;
+
+#define PHILON_TYPE_WEBKIT_VIEW (philon_webkit_view_get_type ())
+#define PHILON_WEBKIT_VIEW(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), PHILON_TYPE_WEBKIT_VIEW, philonWebKit_View))
+#define PHILON_WEBKIT_VIEW_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), PHILON_TYPE_WEBKIT_VIEW, philonWebKit_ViewClass))
+#define PHILON_IS_WEBKIT_VIEW(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PHILON_TYPE_WEBKIT_VIEW))
+#define PHILON_IS_WEBKIT_VIEW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), PHILON_TYPE_WEBKIT_VIEW))
+#define PHILON_WEBKIT_VIEW_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), PHILON_TYPE_WEBKIT_VIEW, philonWebKit_ViewClass))
+
+typedef struct _philonWebKit_View philonWebKit_View;
+typedef struct _philonWebKit_ViewClass philonWebKit_ViewClass;
 
 #define PHILON_TYPE_ACTIVE_LIST (philon_active_list_get_type ())
 #define PHILON_ACTIVE_LIST(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), PHILON_TYPE_ACTIVE_LIST, philonactiveList))
@@ -42,6 +54,17 @@ typedef struct _philonactiveListClass philonactiveListClass;
 typedef struct _philonfolderList philonfolderList;
 typedef struct _philonfolderListClass philonfolderListClass;
 #define _g_object_unref0(var) ((var == NULL) ? NULL : (var = (g_object_unref (var), NULL)))
+typedef struct _philonWebKit_ViewPrivate philonWebKit_ViewPrivate;
+
+#define PHILON_TYPE_ACTIVE_ITEM (philon_active_item_get_type ())
+#define PHILON_ACTIVE_ITEM(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), PHILON_TYPE_ACTIVE_ITEM, philonactiveItem))
+#define PHILON_ACTIVE_ITEM_CLASS(klass) (G_TYPE_CHECK_CLASS_CAST ((klass), PHILON_TYPE_ACTIVE_ITEM, philonactiveItemClass))
+#define PHILON_IS_ACTIVE_ITEM(obj) (G_TYPE_CHECK_INSTANCE_TYPE ((obj), PHILON_TYPE_ACTIVE_ITEM))
+#define PHILON_IS_ACTIVE_ITEM_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), PHILON_TYPE_ACTIVE_ITEM))
+#define PHILON_ACTIVE_ITEM_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), PHILON_TYPE_ACTIVE_ITEM, philonactiveItemClass))
+
+typedef struct _philonactiveItem philonactiveItem;
+typedef struct _philonactiveItemClass philonactiveItemClass;
 #define _g_free0(var) (var = (g_free (var), NULL))
 
 struct _philonphilonWindow {
@@ -49,20 +72,32 @@ struct _philonphilonWindow {
 	philonphilonWindowPrivate * priv;
 	GtkWindow* instance;
 	GtkHeaderBar* header;
-	GtkGrid* mainContent;
-	WebKitWebView* wbview;
+	philonWebKit_View* wbview;
 	philonactiveList* activeList_i;
 	philonfolderList* folderList_i;
+	GraniteWidgetsAppMenu* newButton;
 };
 
 struct _philonphilonWindowClass {
 	GraniteApplicationClass parent_class;
 };
 
+struct _philonWebKit_View {
+	GtkBin parent_instance;
+	philonWebKit_ViewPrivate * priv;
+	WebKitWebView* wbview;
+};
+
+struct _philonWebKit_ViewClass {
+	GtkBinClass parent_class;
+};
+
 
 static gpointer philon_philon_window_parent_class = NULL;
+extern philonphilonWindow* philon_doc_manager_window;
 
 GType philon_philon_window_get_type (void) G_GNUC_CONST;
+GType philon_webkit_view_get_type (void) G_GNUC_CONST;
 GType philon_active_list_get_type (void) G_GNUC_CONST;
 GType philon_folder_list_get_type (void) G_GNUC_CONST;
 enum  {
@@ -70,39 +105,508 @@ enum  {
 };
 philonphilonWindow* philon_philon_window_new (void);
 philonphilonWindow* philon_philon_window_construct (GType object_type);
-static void philon_philon_window_real_activate (GApplication* base);
+static void philon_philon_window_setupHeaderBar (philonphilonWindow* self);
 static void _gtk_main_quit_gtk_widget_destroy (GtkWidget* _sender, gpointer self);
+static void __lambda7_ (philonphilonWindow* self);
+static void philon_philon_window_dialog_openFolder (philonphilonWindow* self);
+static void ___lambda7__gtk_menu_item_activate (GtkMenuItem* _sender, gpointer self);
+static void __lambda8_ (philonphilonWindow* self);
+static void philon_philon_window_dialog_openFile (philonphilonWindow* self);
+static void ___lambda8__gtk_menu_item_activate (GtkMenuItem* _sender, gpointer self);
+static void __lambda9_ (philonphilonWindow* self);
+static void ___lambda9__gtk_menu_item_activate (GtkMenuItem* _sender, gpointer self);
+static void __lambda10_ (philonphilonWindow* self);
+static void ___lambda10__gtk_menu_item_activate (GtkMenuItem* _sender, gpointer self);
+static GtkWidget* philon_philon_window_setupFolderView (philonphilonWindow* self);
 philonactiveList* philon_active_list_new (void);
 philonactiveList* philon_active_list_construct (GType object_type);
 philonfolderList* philon_folder_list_new (void);
 philonfolderList* philon_folder_list_construct (GType object_type);
+static void philon_philon_window_real_activate (GApplication* base);
+philonWebKit_View* philon_webkit_view_new (void);
+philonWebKit_View* philon_webkit_view_construct (GType object_type);
+philonactiveItem* philon_active_item_new (philonphilonWindow* window, const gchar* name, const gchar* path);
+philonactiveItem* philon_active_item_construct (GType object_type, philonphilonWindow* window, const gchar* name, const gchar* path);
+GType philon_active_item_get_type (void) G_GNUC_CONST;
+void philon_doc_manager_openFolder (const gchar* path, philonfolderList* folderlist, philonphilonWindow* window);
 static GObject * philon_philon_window_constructor (GType type, guint n_construct_properties, GObjectConstructParam * construct_properties);
 static void philon_philon_window_finalize (GObject* obj);
 static void _vala_array_destroy (gpointer array, gint array_length, GDestroyNotify destroy_func);
 static void _vala_array_free (gpointer array, gint array_length, GDestroyNotify destroy_func);
 
 
+static gpointer _g_object_ref0 (gpointer self) {
+#line 44 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	return self ? g_object_ref (self) : NULL;
+#line 142 "philonWindow.c"
+}
+
+
 philonphilonWindow* philon_philon_window_construct (GType object_type) {
 	philonphilonWindow * self = NULL;
-#line 42 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	philonphilonWindow* _tmp0_ = NULL;
+#line 43 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	self = (philonphilonWindow*) granite_application_construct (object_type);
-#line 42 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 44 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp0_ = _g_object_ref0 (self);
+#line 44 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (philon_doc_manager_window);
+#line 44 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	philon_doc_manager_window = _tmp0_;
+#line 43 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	return self;
-#line 92 "philonWindow.c"
+#line 159 "philonWindow.c"
 }
 
 
 philonphilonWindow* philon_philon_window_new (void) {
-#line 42 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 43 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	return philon_philon_window_construct (PHILON_TYPE_PHILON_WINDOW);
-#line 99 "philonWindow.c"
+#line 166 "philonWindow.c"
 }
 
 
 static void _gtk_main_quit_gtk_widget_destroy (GtkWidget* _sender, gpointer self) {
-#line 51 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 52 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	gtk_main_quit ();
-#line 106 "philonWindow.c"
+#line 173 "philonWindow.c"
+}
+
+
+static void __lambda7_ (philonphilonWindow* self) {
+#line 97 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	philon_philon_window_dialog_openFolder (self);
+#line 180 "philonWindow.c"
+}
+
+
+static void ___lambda7__gtk_menu_item_activate (GtkMenuItem* _sender, gpointer self) {
+#line 96 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	__lambda7_ ((philonphilonWindow*) self);
+#line 187 "philonWindow.c"
+}
+
+
+static void __lambda8_ (philonphilonWindow* self) {
+#line 103 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	philon_philon_window_dialog_openFile (self);
+#line 194 "philonWindow.c"
+}
+
+
+static void ___lambda8__gtk_menu_item_activate (GtkMenuItem* _sender, gpointer self) {
+#line 102 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	__lambda8_ ((philonphilonWindow*) self);
+#line 201 "philonWindow.c"
+}
+
+
+static void __lambda9_ (philonphilonWindow* self) {
+	philonWebKit_View* _tmp0_ = NULL;
+	WebKitWebView* _tmp1_ = NULL;
+#line 112 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp0_ = self->wbview;
+#line 112 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp1_ = _tmp0_->wbview;
+#line 112 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	webkit_web_view_execute_script (_tmp1_, "docSave();");
+#line 214 "philonWindow.c"
+}
+
+
+static void ___lambda9__gtk_menu_item_activate (GtkMenuItem* _sender, gpointer self) {
+#line 111 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	__lambda9_ ((philonphilonWindow*) self);
+#line 221 "philonWindow.c"
+}
+
+
+static void __lambda10_ (philonphilonWindow* self) {
+}
+
+
+static void ___lambda10__gtk_menu_item_activate (GtkMenuItem* _sender, gpointer self) {
+#line 121 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	__lambda10_ ((philonphilonWindow*) self);
+#line 232 "philonWindow.c"
+}
+
+
+static void philon_philon_window_setupHeaderBar (philonphilonWindow* self) {
+	GtkHeaderBar* _tmp0_ = NULL;
+	GtkHeaderBar* _tmp1_ = NULL;
+	GtkHeaderBar* _tmp2_ = NULL;
+	GtkHeaderBar* _tmp3_ = NULL;
+	GtkListStore* list_store = NULL;
+	GtkListStore* _tmp4_ = NULL;
+	GtkTreeIter iter = {0};
+	GtkTreeIter _tmp5_ = {0};
+	GtkTreeIter _tmp6_ = {0};
+	GtkTreeIter _tmp7_ = {0};
+	GtkTreeIter _tmp8_ = {0};
+	GtkComboBox* platformSelection = NULL;
+	GtkComboBox* _tmp9_ = NULL;
+	GtkCellRendererText* renderer = NULL;
+	GtkCellRendererText* _tmp10_ = NULL;
+	GtkListStore* list_store2 = NULL;
+	GtkListStore* _tmp11_ = NULL;
+	GtkTreeIter iter2 = {0};
+	GtkTreeIter _tmp12_ = {0};
+	GtkTreeIter _tmp13_ = {0};
+	GtkTreeIter _tmp14_ = {0};
+	GtkTreeIter _tmp15_ = {0};
+	GtkComboBox* modeSelection = NULL;
+	GtkComboBox* _tmp16_ = NULL;
+	GtkCellRendererText* renderer2 = NULL;
+	GtkCellRendererText* _tmp17_ = NULL;
+	GtkAccelGroup* accel_group = NULL;
+	GtkAccelGroup* _tmp18_ = NULL;
+	GtkMenu* newModel = NULL;
+	GtkMenu* _tmp19_ = NULL;
+	GtkMenuItem* item_folder = NULL;
+	GtkMenuItem* _tmp20_ = NULL;
+	GtkMenuItem* item_file = NULL;
+	GtkMenuItem* _tmp21_ = NULL;
+	GtkSeparatorMenuItem* separator = NULL;
+	GtkSeparatorMenuItem* _tmp22_ = NULL;
+	GtkMenuItem* item_save = NULL;
+	GtkMenuItem* _tmp23_ = NULL;
+	GtkSeparatorMenuItem* separator1 = NULL;
+	GtkSeparatorMenuItem* _tmp24_ = NULL;
+	GtkMenuItem* item_settings = NULL;
+	GtkMenuItem* _tmp25_ = NULL;
+	GraniteWidgetsAppMenu* _tmp26_ = NULL;
+	GraniteWidgetsAppMenu* _tmp27_ = NULL;
+	GraniteWidgetsToolButtonWithMenu* nf_menu = NULL;
+	GtkImage* _tmp28_ = NULL;
+	GtkImage* _tmp29_ = NULL;
+	GraniteWidgetsToolButtonWithMenu* _tmp30_ = NULL;
+	GraniteWidgetsToolButtonWithMenu* _tmp31_ = NULL;
+	GtkEntry* findReplace = NULL;
+	GtkEntry* _tmp32_ = NULL;
+	GtkHeaderBar* _tmp33_ = NULL;
+	GtkHeaderBar* _tmp34_ = NULL;
+	GtkHeaderBar* _tmp35_ = NULL;
+	GtkHeaderBar* _tmp36_ = NULL;
+	GraniteWidgetsAppMenu* _tmp37_ = NULL;
+	GtkHeaderBar* _tmp38_ = NULL;
+	GtkWindow* _tmp39_ = NULL;
+	GtkHeaderBar* _tmp40_ = NULL;
+#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_return_if_fail (self != NULL);
+#line 49 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp0_ = (GtkHeaderBar*) gtk_header_bar_new ();
+#line 49 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp0_);
+#line 49 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (self->header);
+#line 49 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	self->header = _tmp0_;
+#line 50 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp1_ = self->header;
+#line 50 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_header_bar_set_title (_tmp1_, "Philon");
+#line 51 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp2_ = self->header;
+#line 51 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_header_bar_set_show_close_button (_tmp2_, TRUE);
+#line 52 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp3_ = self->header;
+#line 52 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_signal_connect ((GtkWidget*) _tmp3_, "destroy", (GCallback) _gtk_main_quit_gtk_widget_destroy, NULL);
+#line 56 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp4_ = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_INT);
+#line 56 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	list_store = _tmp4_;
+#line 59 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_list_store_append (list_store, &_tmp5_);
+#line 59 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	iter = _tmp5_;
+#line 60 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp6_ = iter;
+#line 60 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_list_store_set (list_store, &_tmp6_, 0, "iOS", -1);
+#line 61 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_list_store_append (list_store, &_tmp7_);
+#line 61 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	iter = _tmp7_;
+#line 62 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp8_ = iter;
+#line 62 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_list_store_set (list_store, &_tmp8_, 0, "Android", -1);
+#line 63 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp9_ = (GtkComboBox*) gtk_combo_box_new_with_model ((GtkTreeModel*) list_store);
+#line 63 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp9_);
+#line 63 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	platformSelection = _tmp9_;
+#line 65 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp10_ = (GtkCellRendererText*) gtk_cell_renderer_text_new ();
+#line 65 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp10_);
+#line 65 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	renderer = _tmp10_;
+#line 66 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_cell_layout_pack_start ((GtkCellLayout*) platformSelection, (GtkCellRenderer*) renderer, TRUE);
+#line 67 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_cell_layout_add_attribute ((GtkCellLayout*) platformSelection, (GtkCellRenderer*) renderer, "text", 0);
+#line 68 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_combo_box_set_active (platformSelection, 0);
+#line 72 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp11_ = gtk_list_store_new (2, G_TYPE_STRING, G_TYPE_INT);
+#line 72 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	list_store2 = _tmp11_;
+#line 75 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_list_store_append (list_store2, &_tmp12_);
+#line 75 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	iter2 = _tmp12_;
+#line 76 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp13_ = iter2;
+#line 76 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_list_store_set (list_store2, &_tmp13_, 0, "Emulator Debug", 1, 13, -1);
+#line 77 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_list_store_append (list_store2, &_tmp14_);
+#line 77 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	iter2 = _tmp14_;
+#line 78 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp15_ = iter2;
+#line 78 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_list_store_set (list_store2, &_tmp15_, 0, "Emulator Release", 1, 17, -1);
+#line 79 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp16_ = (GtkComboBox*) gtk_combo_box_new_with_model ((GtkTreeModel*) list_store2);
+#line 79 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp16_);
+#line 79 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	modeSelection = _tmp16_;
+#line 81 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp17_ = (GtkCellRendererText*) gtk_cell_renderer_text_new ();
+#line 81 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp17_);
+#line 81 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	renderer2 = _tmp17_;
+#line 82 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_cell_layout_pack_start ((GtkCellLayout*) modeSelection, (GtkCellRenderer*) renderer2, TRUE);
+#line 83 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_cell_layout_add_attribute ((GtkCellLayout*) modeSelection, (GtkCellRenderer*) renderer2, "text", 0);
+#line 84 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_combo_box_set_active (modeSelection, 0);
+#line 87 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp18_ = gtk_accel_group_new ();
+#line 87 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	accel_group = _tmp18_;
+#line 91 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp19_ = (GtkMenu*) gtk_menu_new ();
+#line 91 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp19_);
+#line 91 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	newModel = _tmp19_;
+#line 92 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_menu_set_accel_group (newModel, accel_group);
+#line 95 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp20_ = (GtkMenuItem*) gtk_menu_item_new_with_label ("Open Folder");
+#line 95 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp20_);
+#line 95 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	item_folder = _tmp20_;
+#line 96 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_signal_connect_object (item_folder, "activate", (GCallback) ___lambda7__gtk_menu_item_activate, self, 0);
+#line 99 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_container_add ((GtkContainer*) newModel, (GtkWidget*) item_folder);
+#line 101 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp21_ = (GtkMenuItem*) gtk_menu_item_new_with_label ("Open File");
+#line 101 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp21_);
+#line 101 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	item_file = _tmp21_;
+#line 102 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_signal_connect_object (item_file, "activate", (GCallback) ___lambda8__gtk_menu_item_activate, self, 0);
+#line 105 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_container_add ((GtkContainer*) newModel, (GtkWidget*) item_file);
+#line 107 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp22_ = (GtkSeparatorMenuItem*) gtk_separator_menu_item_new ();
+#line 107 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp22_);
+#line 107 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	separator = _tmp22_;
+#line 108 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_container_add ((GtkContainer*) newModel, (GtkWidget*) separator);
+#line 110 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp23_ = (GtkMenuItem*) gtk_menu_item_new_with_label ("Save File");
+#line 110 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp23_);
+#line 110 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	item_save = _tmp23_;
+#line 111 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_signal_connect_object (item_save, "activate", (GCallback) ___lambda9__gtk_menu_item_activate, self, 0);
+#line 114 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_container_add ((GtkContainer*) newModel, (GtkWidget*) item_save);
+#line 115 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_widget_add_accelerator ((GtkWidget*) newModel, "activate", accel_group, (guint) 'S', GDK_CONTROL_MASK, GTK_ACCEL_VISIBLE);
+#line 117 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp24_ = (GtkSeparatorMenuItem*) gtk_separator_menu_item_new ();
+#line 117 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp24_);
+#line 117 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	separator1 = _tmp24_;
+#line 118 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_container_add ((GtkContainer*) newModel, (GtkWidget*) separator1);
+#line 120 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp25_ = (GtkMenuItem*) gtk_menu_item_new_with_label ("Settings");
+#line 120 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp25_);
+#line 120 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	item_settings = _tmp25_;
+#line 121 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_signal_connect_object (item_settings, "activate", (GCallback) ___lambda10__gtk_menu_item_activate, self, 0);
+#line 124 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_container_add ((GtkContainer*) newModel, (GtkWidget*) item_settings);
+#line 127 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp26_ = granite_widgets_app_menu_new (newModel);
+#line 127 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp26_);
+#line 127 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (self->newButton);
+#line 127 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	self->newButton = _tmp26_;
+#line 128 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp27_ = self->newButton;
+#line 128 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_tool_button_set_stock_id ((GtkToolButton*) _tmp27_, "new");
+#line 130 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp28_ = (GtkImage*) gtk_image_new_from_icon_name ("media-playback-start", GTK_ICON_SIZE_LARGE_TOOLBAR);
+#line 130 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp28_);
+#line 130 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp29_ = _tmp28_;
+#line 130 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp30_ = granite_widgets_tool_button_with_menu_new (_tmp29_, "", newModel);
+#line 130 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp30_);
+#line 130 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp31_ = _tmp30_;
+#line 130 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (_tmp29_);
+#line 130 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	nf_menu = _tmp31_;
+#line 132 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp32_ = (GtkEntry*) gtk_entry_new ();
+#line 132 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp32_);
+#line 132 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	findReplace = _tmp32_;
+#line 133 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_entry_set_placeholder_text (findReplace, "Find/Replace");
+#line 135 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp33_ = self->header;
+#line 135 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_header_bar_pack_start (_tmp33_, (GtkWidget*) nf_menu);
+#line 136 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp34_ = self->header;
+#line 136 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_header_bar_pack_start (_tmp34_, (GtkWidget*) platformSelection);
+#line 137 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp35_ = self->header;
+#line 137 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_header_bar_pack_start (_tmp35_, (GtkWidget*) modeSelection);
+#line 139 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp36_ = self->header;
+#line 139 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp37_ = self->newButton;
+#line 139 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_header_bar_pack_end (_tmp36_, (GtkWidget*) _tmp37_);
+#line 140 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp38_ = self->header;
+#line 140 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_header_bar_pack_end (_tmp38_, (GtkWidget*) findReplace);
+#line 141 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp39_ = self->instance;
+#line 141 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp40_ = self->header;
+#line 141 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_window_set_titlebar (_tmp39_, (GtkWidget*) _tmp40_);
+#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (findReplace);
+#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (nf_menu);
+#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (item_settings);
+#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (separator1);
+#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (item_save);
+#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (separator);
+#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (item_file);
+#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (item_folder);
+#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (newModel);
+#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (accel_group);
+#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (renderer2);
+#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (modeSelection);
+#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (list_store2);
+#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (renderer);
+#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (platformSelection);
+#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (list_store);
+#line 560 "philonWindow.c"
+}
+
+
+static GtkWidget* philon_philon_window_setupFolderView (philonphilonWindow* self) {
+	GtkWidget* result = NULL;
+	philonactiveList* _tmp0_ = NULL;
+	philonfolderList* _tmp1_ = NULL;
+	GraniteWidgetsThinPaned* folderBox = NULL;
+	GraniteWidgetsThinPaned* _tmp2_ = NULL;
+	philonactiveList* _tmp3_ = NULL;
+	philonfolderList* _tmp4_ = NULL;
+#line 144 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_return_val_if_fail (self != NULL, NULL);
+#line 146 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp0_ = philon_active_list_new ();
+#line 146 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp0_);
+#line 146 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (self->activeList_i);
+#line 146 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	self->activeList_i = _tmp0_;
+#line 149 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp1_ = philon_folder_list_new ();
+#line 149 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp1_);
+#line 149 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (self->folderList_i);
+#line 149 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	self->folderList_i = _tmp1_;
+#line 151 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp2_ = granite_widgets_thin_paned_new (GTK_ORIENTATION_VERTICAL);
+#line 151 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp2_);
+#line 151 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	folderBox = _tmp2_;
+#line 152 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp3_ = self->activeList_i;
+#line 152 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_paned_add1 ((GtkPaned*) folderBox, (GtkWidget*) _tmp3_);
+#line 153 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp4_ = self->folderList_i;
+#line 153 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_paned_add2 ((GtkPaned*) folderBox, (GtkWidget*) _tmp4_);
+#line 155 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_paned_set_position ((GtkPaned*) folderBox, 100);
+#line 157 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	result = (GtkWidget*) folderBox;
+#line 157 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	return result;
+#line 610 "philonWindow.c"
 }
 
 
@@ -113,170 +617,247 @@ static void philon_philon_window_real_activate (GApplication* base) {
 	GtkWindow* _tmp2_ = NULL;
 	GtkWindow* _tmp3_ = NULL;
 	GtkWindow* _tmp4_ = NULL;
-	GtkWindow* _tmp5_ = NULL;
-	GtkHeaderBar* _tmp6_ = NULL;
-	GtkHeaderBar* _tmp7_ = NULL;
-	GtkHeaderBar* _tmp8_ = NULL;
-	GtkHeaderBar* _tmp9_ = NULL;
-	philonactiveList* _tmp10_ = NULL;
-	philonfolderList* _tmp11_ = NULL;
-	WebKitWebView* _tmp12_ = NULL;
-	WebKitWebView* _tmp13_ = NULL;
-	GtkScrolledWindow* sWindow = NULL;
-	GtkScrolledWindow* _tmp14_ = NULL;
-	WebKitWebView* _tmp15_ = NULL;
-	WebKitWebView* _tmp16_ = NULL;
-	GtkBox* mainBox = NULL;
-	GtkBox* _tmp17_ = NULL;
-	GtkBox* folderBox = NULL;
-	GtkBox* _tmp18_ = NULL;
-	philonactiveList* _tmp19_ = NULL;
-	philonfolderList* _tmp20_ = NULL;
-	GtkWindow* _tmp21_ = NULL;
-	GtkWindow* _tmp22_ = NULL;
-	GtkHeaderBar* _tmp23_ = NULL;
-	GtkWindow* _tmp24_ = NULL;
-#line 44 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	philonWebKit_View* _tmp5_ = NULL;
+	GraniteWidgetsThinPaned* mainBox = NULL;
+	GraniteWidgetsThinPaned* _tmp6_ = NULL;
+	GtkWidget* _tmp7_ = NULL;
+	GtkWidget* _tmp8_ = NULL;
+	philonWebKit_View* _tmp9_ = NULL;
+	GtkWindow* _tmp10_ = NULL;
+	GtkWindow* _tmp11_ = NULL;
+	GtkHeaderBar* _tmp12_ = NULL;
+	GtkWindow* _tmp13_ = NULL;
+#line 160 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	self = (philonphilonWindow*) base;
-#line 45 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 161 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	_tmp0_ = (GtkWindow*) gtk_window_new (GTK_WINDOW_TOPLEVEL);
-#line 45 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 161 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	g_object_ref_sink (_tmp0_);
-#line 45 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 161 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	_g_object_unref0 (self->instance);
-#line 45 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 161 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	self->instance = _tmp0_;
-#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 163 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	_tmp1_ = self->instance;
-#line 47 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 163 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	gtk_window_set_title (_tmp1_, "Hello World!");
-#line 48 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 164 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	_tmp2_ = self->instance;
-#line 48 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	gtk_container_set_border_width ((GtkContainer*) _tmp2_, (guint) 12);
-#line 49 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 164 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_window_set_position (_tmp2_, GTK_WIN_POS_CENTER);
+#line 165 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	_tmp3_ = self->instance;
-#line 49 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	gtk_window_set_position (_tmp3_, GTK_WIN_POS_CENTER);
-#line 50 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 165 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_window_set_default_size (_tmp3_, 800, 600);
+#line 166 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	_tmp4_ = self->instance;
-#line 50 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	gtk_window_set_default_size (_tmp4_, 350, 70);
-#line 51 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp5_ = self->instance;
-#line 51 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	g_signal_connect ((GtkWidget*) _tmp5_, "destroy", (GCallback) _gtk_main_quit_gtk_widget_destroy, NULL);
-#line 54 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp6_ = (GtkHeaderBar*) gtk_header_bar_new ();
-#line 54 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	g_object_ref_sink (_tmp6_);
-#line 54 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_object_unref0 (self->header);
-#line 54 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	self->header = _tmp6_;
-#line 55 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp7_ = self->header;
-#line 55 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	gtk_header_bar_set_title (_tmp7_, "Philon");
-#line 56 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp8_ = self->header;
-#line 56 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	gtk_header_bar_set_show_close_button (_tmp8_, TRUE);
-#line 57 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp9_ = self->header;
-#line 57 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	g_signal_connect ((GtkWidget*) _tmp9_, "destroy", (GCallback) _gtk_main_quit_gtk_widget_destroy, NULL);
-#line 61 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp10_ = philon_active_list_new ();
-#line 61 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	g_object_ref_sink (_tmp10_);
-#line 61 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_object_unref0 (self->activeList_i);
-#line 61 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	self->activeList_i = _tmp10_;
-#line 64 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp11_ = philon_folder_list_new ();
-#line 64 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	g_object_ref_sink (_tmp11_);
-#line 64 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_object_unref0 (self->folderList_i);
-#line 64 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	self->folderList_i = _tmp11_;
-#line 67 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp12_ = (WebKitWebView*) webkit_web_view_new ();
-#line 67 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	g_object_ref_sink (_tmp12_);
-#line 67 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 166 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_signal_connect ((GtkWidget*) _tmp4_, "destroy", (GCallback) _gtk_main_quit_gtk_widget_destroy, NULL);
+#line 168 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	philon_philon_window_setupHeaderBar (self);
+#line 170 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp5_ = philon_webkit_view_new ();
+#line 170 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp5_);
+#line 170 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	_g_object_unref0 (self->wbview);
-#line 67 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	self->wbview = _tmp12_;
-#line 68 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp13_ = self->wbview;
-#line 68 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	gtk_widget_show ((GtkWidget*) _tmp13_);
-#line 70 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp14_ = (GtkScrolledWindow*) gtk_scrolled_window_new (NULL, NULL);
-#line 70 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	g_object_ref_sink (_tmp14_);
-#line 70 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	sWindow = _tmp14_;
-#line 71 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	gtk_scrolled_window_set_policy (sWindow, GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-#line 74 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp15_ = self->wbview;
-#line 74 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	webkit_web_view_load_uri (_tmp15_, "http://www.google.com");
-#line 75 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp16_ = self->wbview;
-#line 75 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	gtk_container_add ((GtkContainer*) sWindow, (GtkWidget*) _tmp16_);
-#line 77 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp17_ = (GtkBox*) gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-#line 77 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	g_object_ref_sink (_tmp17_);
-#line 77 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	mainBox = _tmp17_;
-#line 78 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp18_ = (GtkBox*) gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-#line 78 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	g_object_ref_sink (_tmp18_);
-#line 78 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	folderBox = _tmp18_;
-#line 79 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp19_ = self->activeList_i;
-#line 79 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	gtk_box_pack_start (folderBox, (GtkWidget*) _tmp19_, FALSE, TRUE, (guint) 0);
-#line 80 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp20_ = self->folderList_i;
-#line 80 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	gtk_box_pack_start (folderBox, (GtkWidget*) _tmp20_, FALSE, TRUE, (guint) 0);
-#line 82 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	gtk_box_pack_start (mainBox, (GtkWidget*) folderBox, FALSE, FALSE, (guint) 0);
-#line 83 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	gtk_box_pack_start (mainBox, (GtkWidget*) sWindow, TRUE, TRUE, (guint) 0);
-#line 85 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp21_ = self->instance;
-#line 85 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	gtk_container_add ((GtkContainer*) _tmp21_, (GtkWidget*) mainBox);
-#line 87 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp22_ = self->instance;
-#line 87 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp23_ = self->header;
-#line 87 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	gtk_window_set_titlebar (_tmp22_, (GtkWidget*) _tmp23_);
-#line 88 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp24_ = self->instance;
-#line 88 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	gtk_widget_show_all ((GtkWidget*) _tmp24_);
-#line 91 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 170 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	self->wbview = _tmp5_;
+#line 172 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp6_ = granite_widgets_thin_paned_new (GTK_ORIENTATION_HORIZONTAL);
+#line 172 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp6_);
+#line 172 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	mainBox = _tmp6_;
+#line 173 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp7_ = philon_philon_window_setupFolderView (self);
+#line 173 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp8_ = _tmp7_;
+#line 173 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_paned_add1 ((GtkPaned*) mainBox, _tmp8_);
+#line 173 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (_tmp8_);
+#line 174 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp9_ = self->wbview;
+#line 174 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_paned_add2 ((GtkPaned*) mainBox, (GtkWidget*) _tmp9_);
+#line 176 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_paned_set_position ((GtkPaned*) mainBox, 200);
+#line 178 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp10_ = self->instance;
+#line 178 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_container_add ((GtkContainer*) _tmp10_, (GtkWidget*) mainBox);
+#line 180 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp11_ = self->instance;
+#line 180 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp12_ = self->header;
+#line 180 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_window_set_titlebar (_tmp11_, (GtkWidget*) _tmp12_);
+#line 181 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp13_ = self->instance;
+#line 181 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_widget_show_all ((GtkWidget*) _tmp13_);
+#line 184 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	gtk_main ();
-#line 44 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_object_unref0 (folderBox);
-#line 44 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 160 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	_g_object_unref0 (mainBox);
-#line 44 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_object_unref0 (sWindow);
-#line 280 "philonWindow.c"
+#line 705 "philonWindow.c"
+}
+
+
+static void philon_philon_window_dialog_openFile (philonphilonWindow* self) {
+	GtkFileChooserDialog* file_chooser = NULL;
+	GtkFileChooserDialog* _tmp0_ = NULL;
+	GtkFileChooserDialog* _tmp1_ = NULL;
+	gint _tmp2_ = 0;
+	GtkFileChooserDialog* _tmp17_ = NULL;
+#line 187 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_return_if_fail (self != NULL);
+#line 188 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp0_ = (GtkFileChooserDialog*) gtk_file_chooser_dialog_new ("Open File", G_TYPE_CHECK_INSTANCE_CAST (self, GTK_TYPE_WINDOW, GtkWindow), GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+#line 188 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp0_);
+#line 188 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	file_chooser = _tmp0_;
+#line 193 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp1_ = file_chooser;
+#line 193 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp2_ = gtk_dialog_run ((GtkDialog*) _tmp1_);
+#line 193 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	if (_tmp2_ == ((gint) GTK_RESPONSE_ACCEPT)) {
+#line 729 "philonWindow.c"
+		gchar* docName = NULL;
+		GtkFileChooserDialog* _tmp3_ = NULL;
+		gchar* _tmp4_ = NULL;
+		philonactiveList* _tmp5_ = NULL;
+		GraniteWidgetsSourceListExpandableItem* _tmp6_ = NULL;
+		GraniteWidgetsSourceListExpandableItem* _tmp7_ = NULL;
+		GtkFileChooserDialog* _tmp8_ = NULL;
+		GFile* _tmp9_ = NULL;
+		gchar* _tmp10_ = NULL;
+		gchar* _tmp11_ = NULL;
+		GtkFileChooserDialog* _tmp12_ = NULL;
+		gchar* _tmp13_ = NULL;
+		gchar* _tmp14_ = NULL;
+		philonactiveItem* _tmp15_ = NULL;
+		philonactiveItem* _tmp16_ = NULL;
+#line 194 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp3_ = file_chooser;
+#line 194 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp4_ = gtk_file_chooser_get_filename ((GtkFileChooser*) _tmp3_);
+#line 194 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		docName = _tmp4_;
+#line 195 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp5_ = self->activeList_i;
+#line 195 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp6_ = granite_widgets_source_list_get_root ((GraniteWidgetsSourceList*) _tmp5_);
+#line 195 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp7_ = _tmp6_;
+#line 195 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp8_ = file_chooser;
+#line 195 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp9_ = gtk_file_chooser_get_file ((GtkFileChooser*) _tmp8_);
+#line 195 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp10_ = g_file_get_basename (_tmp9_);
+#line 195 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp11_ = _tmp10_;
+#line 195 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp12_ = file_chooser;
+#line 195 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp13_ = gtk_file_chooser_get_filename ((GtkFileChooser*) _tmp12_);
+#line 195 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp14_ = _tmp13_;
+#line 195 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp15_ = philon_active_item_new (self, _tmp11_, _tmp14_);
+#line 195 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp16_ = _tmp15_;
+#line 195 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		granite_widgets_source_list_expandable_item_add (_tmp7_, (GraniteWidgetsSourceListItem*) _tmp16_);
+#line 195 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_g_object_unref0 (_tmp16_);
+#line 195 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_g_free0 (_tmp14_);
+#line 195 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_g_free0 (_tmp11_);
+#line 193 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_g_free0 (docName);
+#line 785 "philonWindow.c"
+	}
+#line 197 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp17_ = file_chooser;
+#line 197 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_widget_destroy ((GtkWidget*) _tmp17_);
+#line 187 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (file_chooser);
+#line 793 "philonWindow.c"
+}
+
+
+static void philon_philon_window_dialog_openFolder (philonphilonWindow* self) {
+	GtkFileChooserDialog* file_chooser = NULL;
+	GtkFileChooserDialog* _tmp0_ = NULL;
+	GtkFileChooserDialog* _tmp1_ = NULL;
+	gint _tmp2_ = 0;
+	GtkFileChooserDialog* _tmp11_ = NULL;
+#line 200 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_return_if_fail (self != NULL);
+#line 201 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp0_ = (GtkFileChooserDialog*) gtk_file_chooser_dialog_new ("Open Folder", G_TYPE_CHECK_INSTANCE_CAST (self, GTK_TYPE_WINDOW, GtkWindow), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, NULL);
+#line 201 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	g_object_ref_sink (_tmp0_);
+#line 201 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	file_chooser = _tmp0_;
+#line 206 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp1_ = file_chooser;
+#line 206 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp2_ = gtk_dialog_run ((GtkDialog*) _tmp1_);
+#line 206 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	if (_tmp2_ == ((gint) GTK_RESPONSE_ACCEPT)) {
+#line 817 "philonWindow.c"
+		philonfolderList* _tmp3_ = NULL;
+		GraniteWidgetsSourceListExpandableItem* _tmp4_ = NULL;
+		GraniteWidgetsSourceListExpandableItem* _tmp5_ = NULL;
+		gchar* docName = NULL;
+		GtkFileChooserDialog* _tmp6_ = NULL;
+		gchar* _tmp7_ = NULL;
+		const gchar* _tmp8_ = NULL;
+		philonfolderList* _tmp9_ = NULL;
+		philonfolderList* _tmp10_ = NULL;
+#line 207 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp3_ = self->folderList_i;
+#line 207 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp4_ = granite_widgets_source_list_get_root ((GraniteWidgetsSourceList*) _tmp3_);
+#line 207 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp5_ = _tmp4_;
+#line 207 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		granite_widgets_source_list_expandable_item_clear (_tmp5_);
+#line 208 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp6_ = file_chooser;
+#line 208 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp7_ = gtk_file_chooser_get_filename ((GtkFileChooser*) _tmp6_);
+#line 208 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		docName = _tmp7_;
+#line 209 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp8_ = docName;
+#line 209 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp9_ = self->folderList_i;
+#line 209 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		philon_doc_manager_openFolder (_tmp8_, _tmp9_, self);
+#line 210 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_tmp10_ = self->folderList_i;
+#line 210 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		granite_widgets_source_list_refilter ((GraniteWidgetsSourceList*) _tmp10_);
+#line 206 "/home/digi/Projects/Philon/src/philonWindow.vala"
+		_g_free0 (docName);
+#line 853 "philonWindow.c"
+	}
+#line 212 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp11_ = file_chooser;
+#line 212 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	gtk_widget_destroy ((GtkWidget*) _tmp11_);
+#line 200 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (file_chooser);
+#line 861 "philonWindow.c"
 }
 
 
@@ -304,154 +885,154 @@ static GObject * philon_philon_window_constructor (GType type, guint n_construct
 	gchar* _tmp17_ = NULL;
 	gchar* _tmp18_ = NULL;
 	gchar* _tmp19_ = NULL;
-#line 9 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 7 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	parent_class = G_OBJECT_CLASS (philon_philon_window_parent_class);
-#line 9 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 7 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	obj = parent_class->constructor (type, n_construct_properties, construct_properties);
-#line 9 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 7 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, PHILON_TYPE_PHILON_WINDOW, philonphilonWindow);
-#line 10 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 8 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	_tmp0_ = g_strdup ("");
-#line 10 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 8 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	_g_free0 (((GraniteApplication*) self)->build_data_dir);
-#line 10 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 8 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	((GraniteApplication*) self)->build_data_dir = _tmp0_;
-#line 11 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp1_ = g_strdup ("");
-#line 11 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_free0 (((GraniteApplication*) self)->build_pkg_data_dir);
-#line 11 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->build_pkg_data_dir = _tmp1_;
-#line 12 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp2_ = g_strdup ("Philon");
-#line 12 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_free0 (((GraniteApplication*) self)->build_release_name);
-#line 12 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->build_release_name = _tmp2_;
-#line 13 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp3_ = g_strdup ("0.0.1");
-#line 13 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_free0 (((GraniteApplication*) self)->build_version);
-#line 13 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->build_version = _tmp3_;
-#line 14 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp4_ = g_strdup ("0.0.1");
-#line 14 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_free0 (((GraniteApplication*) self)->build_version_info);
-#line 14 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->build_version_info = _tmp4_;
-#line 15 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp5_ = g_strdup ("Philon");
-#line 15 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_free0 (((GraniteApplication*) self)->program_name);
-#line 15 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->program_name = _tmp5_;
-#line 16 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp6_ = g_strdup ("Philon");
-#line 16 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_free0 (((GraniteApplication*) self)->exec_name);
-#line 16 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->exec_name = _tmp6_;
-#line 17 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp7_ = g_strdup ("2014");
-#line 17 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_free0 (((GraniteApplication*) self)->app_copyright);
-#line 17 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->app_copyright = _tmp7_;
-#line 18 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp8_ = g_strdup ("2014");
-#line 18 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_free0 (((GraniteApplication*) self)->app_years);
-#line 18 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->app_years = _tmp8_;
-#line 19 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp9_ = g_strdup ("taxi");
-#line 19 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_free0 (((GraniteApplication*) self)->app_icon);
-#line 19 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->app_icon = _tmp9_;
-#line 20 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp10_ = g_strdup ("");
-#line 20 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_free0 (((GraniteApplication*) self)->app_launcher);
-#line 20 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->app_launcher = _tmp10_;
-#line 21 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp11_ = g_strdup ("https://github.com/Digi59404/Philon");
-#line 21 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_free0 (((GraniteApplication*) self)->main_url);
-#line 21 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->main_url = _tmp11_;
-#line 22 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp12_ = g_strdup ("https://github.com/Digi59404/Philon/issues");
-#line 22 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_free0 (((GraniteApplication*) self)->bug_url);
-#line 22 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->bug_url = _tmp12_;
-#line 23 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp13_ = g_strdup ("Chris Timberlake <CT@ChristopherTimberlake.com>");
-#line 23 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp14_ = g_new0 (gchar*, 1 + 1);
-#line 23 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp14_[0] = _tmp13_;
-#line 23 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->about_authors = (_vala_array_free (((GraniteApplication*) self)->about_authors, ((GraniteApplication*) self)->about_authors_length1, (GDestroyNotify) g_free), NULL);
-#line 23 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->about_authors = _tmp14_;
-#line 23 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->about_authors_length1 = 1;
-#line 26 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp15_ = g_new0 (gchar*, 0 + 1);
-#line 26 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->about_documenters = (_vala_array_free (((GraniteApplication*) self)->about_documenters, ((GraniteApplication*) self)->about_documenters_length1, (GDestroyNotify) g_free), NULL);
-#line 26 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->about_documenters = _tmp15_;
-#line 26 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->about_documenters_length1 = 0;
-#line 27 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp16_ = g_new0 (gchar*, 0 + 1);
-#line 27 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->about_artists = (_vala_array_free (((GraniteApplication*) self)->about_artists, ((GraniteApplication*) self)->about_artists_length1, (GDestroyNotify) g_free), NULL);
-#line 27 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->about_artists = _tmp16_;
-#line 27 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->about_artists_length1 = 0;
-#line 28 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp17_ = g_strdup ("");
-#line 28 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_free0 (((GraniteApplication*) self)->about_comments);
-#line 28 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->about_comments = _tmp17_;
-#line 29 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp18_ = g_strdup ("");
-#line 29 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_free0 (((GraniteApplication*) self)->about_translators);
-#line 29 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->about_translators = _tmp18_;
-#line 30 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_tmp19_ = g_strdup ("");
-#line 30 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_free0 (((GraniteApplication*) self)->about_license);
-#line 30 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->about_license = _tmp19_;
-#line 31 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	((GraniteApplication*) self)->about_license_type = GTK_LICENSE_MIT_X11;
 #line 9 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp1_ = g_strdup ("");
+#line 9 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_free0 (((GraniteApplication*) self)->build_pkg_data_dir);
+#line 9 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->build_pkg_data_dir = _tmp1_;
+#line 10 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp2_ = g_strdup ("Philon");
+#line 10 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_free0 (((GraniteApplication*) self)->build_release_name);
+#line 10 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->build_release_name = _tmp2_;
+#line 11 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp3_ = g_strdup ("0.0.1");
+#line 11 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_free0 (((GraniteApplication*) self)->build_version);
+#line 11 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->build_version = _tmp3_;
+#line 12 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp4_ = g_strdup ("0.0.1");
+#line 12 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_free0 (((GraniteApplication*) self)->build_version_info);
+#line 12 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->build_version_info = _tmp4_;
+#line 13 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp5_ = g_strdup ("Philon");
+#line 13 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_free0 (((GraniteApplication*) self)->program_name);
+#line 13 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->program_name = _tmp5_;
+#line 14 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp6_ = g_strdup ("Philon");
+#line 14 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_free0 (((GraniteApplication*) self)->exec_name);
+#line 14 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->exec_name = _tmp6_;
+#line 15 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp7_ = g_strdup ("2014");
+#line 15 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_free0 (((GraniteApplication*) self)->app_copyright);
+#line 15 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->app_copyright = _tmp7_;
+#line 16 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp8_ = g_strdup ("2014");
+#line 16 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_free0 (((GraniteApplication*) self)->app_years);
+#line 16 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->app_years = _tmp8_;
+#line 17 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp9_ = g_strdup ("taxi");
+#line 17 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_free0 (((GraniteApplication*) self)->app_icon);
+#line 17 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->app_icon = _tmp9_;
+#line 18 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp10_ = g_strdup ("");
+#line 18 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_free0 (((GraniteApplication*) self)->app_launcher);
+#line 18 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->app_launcher = _tmp10_;
+#line 19 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp11_ = g_strdup ("https://github.com/Digi59404/Philon");
+#line 19 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_free0 (((GraniteApplication*) self)->main_url);
+#line 19 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->main_url = _tmp11_;
+#line 20 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp12_ = g_strdup ("https://github.com/Digi59404/Philon/issues");
+#line 20 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_free0 (((GraniteApplication*) self)->bug_url);
+#line 20 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->bug_url = _tmp12_;
+#line 21 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp13_ = g_strdup ("Chris Timberlake <CT@ChristopherTimberlake.com>");
+#line 21 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp14_ = g_new0 (gchar*, 1 + 1);
+#line 21 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp14_[0] = _tmp13_;
+#line 21 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->about_authors = (_vala_array_free (((GraniteApplication*) self)->about_authors, ((GraniteApplication*) self)->about_authors_length1, (GDestroyNotify) g_free), NULL);
+#line 21 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->about_authors = _tmp14_;
+#line 21 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->about_authors_length1 = 1;
+#line 24 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp15_ = g_new0 (gchar*, 0 + 1);
+#line 24 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->about_documenters = (_vala_array_free (((GraniteApplication*) self)->about_documenters, ((GraniteApplication*) self)->about_documenters_length1, (GDestroyNotify) g_free), NULL);
+#line 24 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->about_documenters = _tmp15_;
+#line 24 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->about_documenters_length1 = 0;
+#line 25 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp16_ = g_new0 (gchar*, 0 + 1);
+#line 25 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->about_artists = (_vala_array_free (((GraniteApplication*) self)->about_artists, ((GraniteApplication*) self)->about_artists_length1, (GDestroyNotify) g_free), NULL);
+#line 25 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->about_artists = _tmp16_;
+#line 25 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->about_artists_length1 = 0;
+#line 26 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp17_ = g_strdup ("");
+#line 26 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_free0 (((GraniteApplication*) self)->about_comments);
+#line 26 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->about_comments = _tmp17_;
+#line 27 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp18_ = g_strdup ("");
+#line 27 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_free0 (((GraniteApplication*) self)->about_translators);
+#line 27 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->about_translators = _tmp18_;
+#line 28 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_tmp19_ = g_strdup ("");
+#line 28 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_free0 (((GraniteApplication*) self)->about_license);
+#line 28 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->about_license = _tmp19_;
+#line 29 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	((GraniteApplication*) self)->about_license_type = GTK_LICENSE_MIT_X11;
+#line 7 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	return obj;
-#line 442 "philonWindow.c"
+#line 1023 "philonWindow.c"
 }
 
 
 static void philon_philon_window_class_init (philonphilonWindowClass * klass) {
-#line 8 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 6 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	philon_philon_window_parent_class = g_type_class_peek_parent (klass);
-#line 8 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 6 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	G_APPLICATION_CLASS (klass)->activate = philon_philon_window_real_activate;
-#line 8 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 6 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	G_OBJECT_CLASS (klass)->constructor = philon_philon_window_constructor;
-#line 8 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 6 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	G_OBJECT_CLASS (klass)->finalize = philon_philon_window_finalize;
-#line 455 "philonWindow.c"
+#line 1036 "philonWindow.c"
 }
 
 
@@ -461,23 +1042,23 @@ static void philon_philon_window_instance_init (philonphilonWindow * self) {
 
 static void philon_philon_window_finalize (GObject* obj) {
 	philonphilonWindow * self;
-#line 8 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 6 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	self = G_TYPE_CHECK_INSTANCE_CAST (obj, PHILON_TYPE_PHILON_WINDOW, philonphilonWindow);
-#line 34 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 33 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	_g_object_unref0 (self->instance);
-#line 35 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 34 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	_g_object_unref0 (self->header);
-#line 36 "/home/digi/Projects/Philon/src/philonWindow.vala"
-	_g_object_unref0 (self->mainContent);
-#line 37 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 35 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	_g_object_unref0 (self->wbview);
-#line 39 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 36 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	_g_object_unref0 (self->activeList_i);
-#line 40 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 37 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	_g_object_unref0 (self->folderList_i);
-#line 8 "/home/digi/Projects/Philon/src/philonWindow.vala"
+#line 38 "/home/digi/Projects/Philon/src/philonWindow.vala"
+	_g_object_unref0 (self->newButton);
+#line 6 "/home/digi/Projects/Philon/src/philonWindow.vala"
 	G_OBJECT_CLASS (philon_philon_window_parent_class)->finalize (obj);
-#line 481 "philonWindow.c"
+#line 1062 "philonWindow.c"
 }
 
 

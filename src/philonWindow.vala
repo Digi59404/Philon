@@ -1,5 +1,3 @@
-
-
 using Gtk;
 using Granite;
 using WebKit;
@@ -31,25 +29,22 @@ namespace philon {
             about_license_type = Gtk.License.MIT_X11;
         }
 
+        /* UI Stuff */
         public Gtk.Window 		instance;
         public Gtk.HeaderBar 	header;
-        public Gtk.Grid			mainContent;
-        public WebView			wbview;
-
+        public WebKit_View		wbview;
         public activeList		activeList_i;
         public folderList		folderList_i;
+        public Granite.Widgets.AppMenu 	newButton;
 
-		public philonWindow() {}
+        /* I/O Stuff */
+       // public docManager		doc;
 
-		protected override void activate () {
-            instance = new Gtk.Window();
+		public philonWindow() {
+			docManager.window = this;
+		}
 
-            instance.title = "Hello World!";
-			instance.set_border_width (12);
-			instance.set_position (Gtk.WindowPosition.CENTER);
-			instance.set_default_size (350, 70);
-			instance.destroy.connect (Gtk.main_quit);
-
+		private void setupHeaderBar(){
 			/* Fancy Headbar! */
 			header = new Gtk.HeaderBar();
 			header.title = "Philon";
@@ -57,30 +52,128 @@ namespace philon {
 			header.destroy.connect (Gtk.main_quit);
 
 
+			/* Platform Dropdown */
+			Gtk.ListStore list_store = new Gtk.ListStore (2, typeof (string), typeof (int));
+			Gtk.TreeIter iter;
+
+			list_store.append (out iter);
+			list_store.set (iter, 0, "iOS");
+			list_store.append (out iter);
+			list_store.set (iter, 0, "Android");
+			Gtk.ComboBox platformSelection = new Gtk.ComboBox.with_model (list_store);
+
+			Gtk.CellRendererText renderer = new Gtk.CellRendererText ();
+			platformSelection.pack_start (renderer, true);
+			platformSelection.add_attribute (renderer, "text", 0);
+			platformSelection.active = 0;
+
+
+			/* Type Dropdown */
+			Gtk.ListStore list_store2 = new Gtk.ListStore (2, typeof (string), typeof (int));
+			Gtk.TreeIter iter2;
+
+			list_store2.append (out iter2);
+			list_store2.set (iter2, 0, "Emulator Debug", 1, 13);
+			list_store2.append (out iter2);
+			list_store2.set (iter2, 0, "Emulator Release", 1, 17);
+			Gtk.ComboBox modeSelection = new Gtk.ComboBox.with_model (list_store2);
+
+			Gtk.CellRendererText renderer2 = new Gtk.CellRendererText ();
+			modeSelection.pack_start (renderer2, true);
+			modeSelection.add_attribute (renderer2, "text", 0);
+			modeSelection.active = 0;
+
+
+			var accel_group = new Gtk.AccelGroup();
+			
+
+			/* New Icon */
+			Gtk.Menu newModel = new Gtk.Menu ();
+			newModel.set_accel_group(accel_group);
+			
+
+			Gtk.MenuItem item_folder = new Gtk.MenuItem.with_label ("Open Folder");
+			item_folder.activate.connect(() =>{
+				this.dialog_openFolder();				
+			});
+			newModel.add (item_folder);
+
+			Gtk.MenuItem item_file = new Gtk.MenuItem.with_label ("Open File");
+			item_file.activate.connect(() =>{
+				this.dialog_openFile();
+			});
+			newModel.add (item_file);
+
+			Gtk.SeparatorMenuItem separator = new Gtk.SeparatorMenuItem ();
+			newModel.add (separator);
+
+			Gtk.MenuItem item_save = new Gtk.MenuItem.with_label ("Save File");
+			item_save.activate.connect(() =>{
+				this.wbview.wbview.execute_script("docSave();");
+			});
+			newModel.add (item_save);
+			newModel.add_accelerator("activate", accel_group, 'S', Gdk.ModifierType.CONTROL_MASK, Gtk.AccelFlags.VISIBLE);
+
+			Gtk.SeparatorMenuItem separator1 = new Gtk.SeparatorMenuItem ();
+			newModel.add (separator1);
+
+			Gtk.MenuItem item_settings = new Gtk.MenuItem.with_label ("Settings");
+			item_settings.activate.connect(() =>{
+				//this.dialog_openFile();
+			});
+			newModel.add (item_settings);
+
+
+			newButton = new Granite.Widgets.AppMenu(newModel);
+			newButton.set_stock_id("new");
+
+			var nf_menu = new Granite.Widgets.ToolButtonWithMenu(new Gtk.Image.from_icon_name ("media-playback-start", Gtk.IconSize.LARGE_TOOLBAR), "", newModel);
+
+			var findReplace = new Gtk.Entry();
+			findReplace.placeholder_text = "Find/Replace";
+
+			header.pack_start(nf_menu);
+			header.pack_start(platformSelection);
+			header.pack_start(modeSelection);
+
+			header.pack_end(newButton);
+			header.pack_end(findReplace);
+			instance.set_titlebar(header);
+		}
+
+		private Gtk.Widget setupFolderView(){
 			/* Add active Files Source List */
 			activeList_i = new activeList();
 
 			/* Add folder Source List */
 			folderList_i = new folderList();
 
-			/* This is gonna hold our code editor's meat! */
-			wbview = new WebView();
-			wbview.show();
-			/* Make sure our meat scrolls */
-		    var sWindow = new ScrolledWindow(null, null);
-			sWindow.set_policy(PolicyType.AUTOMATIC, PolicyType.AUTOMATIC);
+			var folderBox = new Granite.Widgets.ThinPaned(Gtk.Orientation.VERTICAL);
+ 			folderBox.add1(activeList_i);
+ 			folderBox.add2(folderList_i);
 
-			/* Testing */
-			wbview.load_uri("http://www.google.com");
-			sWindow.add(wbview);
+ 			folderBox.set_position(100);
 
-			var mainBox = new Gtk.Box (Gtk.Orientation.HORIZONTAL, 0);
- 			var folderBox = new Gtk.Box (Gtk.Orientation.VERTICAL, 0);
- 			folderBox.pack_start(activeList_i, false, true, 0);
- 			folderBox.pack_start(folderList_i, false, true, 0);
+ 			return folderBox;
+		}
 
- 			mainBox.pack_start(folderBox, false, false, 0);
- 			mainBox.pack_start(sWindow, true, true, 0);
+		protected override void activate () {
+            instance = new Gtk.Window();
+
+            instance.title = "Hello World!";
+			instance.set_position (Gtk.WindowPosition.CENTER);
+			instance.set_default_size (800, 600);
+			instance.destroy.connect (Gtk.main_quit);
+
+			this.setupHeaderBar();
+
+			this.wbview = new WebKit_View();
+
+ 			var mainBox = new Granite.Widgets.ThinPaned();
+ 			mainBox.add1(this.setupFolderView());
+ 			mainBox.add2(this.wbview);
+
+ 			mainBox.set_position(200);
 
 			instance.add(mainBox);
 			/* Add that fancyass header */
@@ -89,6 +182,34 @@ namespace philon {
 
             /* Keep GTK In the Loop.... Eh? Eh? */
             Gtk.main();
+        }
+
+        private void dialog_openFile() {
+        	var file_chooser = new FileChooserDialog ("Open File", (Gtk.Window) this,
+                                      FileChooserAction.OPEN,
+                                      Stock.CANCEL, ResponseType.CANCEL,
+                                      Stock.OPEN, ResponseType.ACCEPT);
+
+	        if (file_chooser.run () == ResponseType.ACCEPT) {
+	            var docName = file_chooser.get_filename();
+	            activeList_i.root.add( new activeItem(this, file_chooser.get_file().get_basename(), file_chooser.get_filename ()));
+	        }
+	        file_chooser.destroy ();
+        }
+
+        private void dialog_openFolder(){
+        	var file_chooser = new FileChooserDialog ("Open Folder", (Gtk.Window) this,
+                                      FileChooserAction.SELECT_FOLDER,
+                                      Stock.CANCEL, ResponseType.CANCEL,
+                                      Stock.OPEN, ResponseType.ACCEPT);
+
+	        if (file_chooser.run () == ResponseType.ACCEPT) {
+	        	this.folderList_i.root.clear();
+	            var docName = file_chooser.get_filename();
+	            docManager.openFolder(docName, folderList_i, this);
+	            this.folderList_i.refilter();
+	        }
+	        file_chooser.destroy ();
         }
 	}
 }

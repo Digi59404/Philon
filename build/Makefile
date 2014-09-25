@@ -152,6 +152,30 @@ philon/fast:
 	$(MAKE) -f CMakeFiles/philon.dir/build.make CMakeFiles/philon.dir/build
 .PHONY : philon/fast
 
+src/docManager.o: src/docManager.c.o
+.PHONY : src/docManager.o
+
+# target to build an object file
+src/docManager.c.o:
+	$(MAKE) -f CMakeFiles/philon.dir/build.make CMakeFiles/philon.dir/src/docManager.c.o
+.PHONY : src/docManager.c.o
+
+src/docManager.i: src/docManager.c.i
+.PHONY : src/docManager.i
+
+# target to preprocess a source file
+src/docManager.c.i:
+	$(MAKE) -f CMakeFiles/philon.dir/build.make CMakeFiles/philon.dir/src/docManager.c.i
+.PHONY : src/docManager.c.i
+
+src/docManager.s: src/docManager.c.s
+.PHONY : src/docManager.s
+
+# target to generate assembly for a file
+src/docManager.c.s:
+	$(MAKE) -f CMakeFiles/philon.dir/build.make CMakeFiles/philon.dir/src/docManager.c.s
+.PHONY : src/docManager.c.s
+
 src/main.o: src/main.c.o
 .PHONY : src/main.o
 
@@ -320,6 +344,30 @@ src/widgets/folderList.c.s:
 	$(MAKE) -f CMakeFiles/philon.dir/build.make CMakeFiles/philon.dir/src/widgets/folderList.c.s
 .PHONY : src/widgets/folderList.c.s
 
+src/widgets/webkitView.o: src/widgets/webkitView.c.o
+.PHONY : src/widgets/webkitView.o
+
+# target to build an object file
+src/widgets/webkitView.c.o:
+	$(MAKE) -f CMakeFiles/philon.dir/build.make CMakeFiles/philon.dir/src/widgets/webkitView.c.o
+.PHONY : src/widgets/webkitView.c.o
+
+src/widgets/webkitView.i: src/widgets/webkitView.c.i
+.PHONY : src/widgets/webkitView.i
+
+# target to preprocess a source file
+src/widgets/webkitView.c.i:
+	$(MAKE) -f CMakeFiles/philon.dir/build.make CMakeFiles/philon.dir/src/widgets/webkitView.c.i
+.PHONY : src/widgets/webkitView.c.i
+
+src/widgets/webkitView.s: src/widgets/webkitView.c.s
+.PHONY : src/widgets/webkitView.s
+
+# target to generate assembly for a file
+src/widgets/webkitView.c.s:
+	$(MAKE) -f CMakeFiles/philon.dir/build.make CMakeFiles/philon.dir/src/widgets/webkitView.c.s
+.PHONY : src/widgets/webkitView.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -333,6 +381,9 @@ help:
 	@echo "... list_install_components"
 	@echo "... philon"
 	@echo "... rebuild_cache"
+	@echo "... src/docManager.o"
+	@echo "... src/docManager.i"
+	@echo "... src/docManager.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
@@ -354,6 +405,9 @@ help:
 	@echo "... src/widgets/folderList.o"
 	@echo "... src/widgets/folderList.i"
 	@echo "... src/widgets/folderList.s"
+	@echo "... src/widgets/webkitView.o"
+	@echo "... src/widgets/webkitView.i"
+	@echo "... src/widgets/webkitView.s"
 .PHONY : help
 
 

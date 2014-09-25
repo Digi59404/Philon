@@ -1,6 +1,8 @@
 FILE(REMOVE_RECURSE
   "src/main.c"
   "src/philonWindow.c"
+  "src/docManager.c"
+  "src/widgets/webkitView.c"
   "src/widgets/folderList.c"
   "src/widgets/activeList.c"
   "src/widgets/activeItem.c"
@@ -9,6 +11,8 @@ FILE(REMOVE_RECURSE
   "philon_valac.stamp"
   "CMakeFiles/philon.dir/src/main.c.o"
   "CMakeFiles/philon.dir/src/philonWindow.c.o"
+  "CMakeFiles/philon.dir/src/docManager.c.o"
+  "CMakeFiles/philon.dir/src/widgets/webkitView.c.o"
   "CMakeFiles/philon.dir/src/widgets/folderList.c.o"
   "CMakeFiles/philon.dir/src/widgets/activeList.c.o"
   "CMakeFiles/philon.dir/src/widgets/activeItem.c.o"

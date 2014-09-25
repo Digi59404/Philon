@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>ACE in Action</title>
+<style type="text/css" media="screen">
+    #editor { 
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+</style>
+</head>
+<body>
+
+<div id="editor"></div>
+    
+<script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="ace/ext-modelist.js"></script>
+<script>
+    var editor = ace.edit("editor");
+    var doc = editor.getSession().getDocument();
+    editor.setTheme("ace/theme/monokai");
+    editor.getSession().setMode("ace/mode/javascript");
+
+    var filepath = '';
+    var init = 0;
+    function docSave(){
+        var val = editor.getValue();
+        SaveFile(val, filepath);
+    }
+    
+    function docOpen(path){
+        var file = OpenFile(path);
+        editor.setValue(file, '-1');
+        filepath = path;
+
+        var modelist = ace.require('ace/ext/modelist');
+        var mode = modelist.getModeForPath(path).mode;
+        editor.session.setMode(mode);
+    }
+    
+    function setDocument(doc, path){
+        editor.setValue(doc, '-1');
+        filepath = path;
+    }
+    editor.getSession().on('change', function(e) {
+        if(init == 0){
+            init = 1;
+        } else {
+            MarkUnsaved(filepath);
+        }
+    });
+
+    editor.commands.addCommand({
+        name: 'save',
+        bindKey: {win: 'Ctrl-S',  mac: 'Command-S'},
+        exec: function(editor) {
+            docSave();
+            ClearUnsaved();
+        },
+        readOnly: true // false if this command should not apply in readOnly mode
+    });
+</script>
+</body>
+</html>

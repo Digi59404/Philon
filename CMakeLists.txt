@@ -15,7 +15,7 @@ set (VERSION_INFO "")
 # we're about to use pkgconfig to make sure dependencies are installed so let's find pkgconfig first
 find_package(PkgConfig)
 # now let's actually check for the required dependencies
-pkg_check_modules(DEPS REQUIRED gtk+-3.0 granite webkit2gtk-3.0)
+pkg_check_modules(DEPS REQUIRED gtk+-3.0 gio-2.0 granite webkitgtk-3.0 libsoup-2.4)
 add_definitions(${DEPS_CFLAGS})
 link_libraries(${DEPS_LIBRARIES})
 link_directories(${DEPS_LIBRARY_DIRS})
@@ -30,6 +30,8 @@ include(ValaPrecompile)
 vala_precompile(VALA_C ${EXEC_NAME}
     src/main.vala
     src/philonWindow.vala
+    src/docManager.vala
+    src/widgets/webkitView.vala
     src/widgets/folderList.vala
     src/widgets/activeList.vala
     src/widgets/activeItem.vala
@@ -38,8 +40,12 @@ vala_precompile(VALA_C ${EXEC_NAME}
 # tell what libraries to use when compiling
 PACKAGES
     gtk+-3.0
+    gio-2.0
     granite
-    webkit2gtk-3.0
+    webkitgtk-3.0
+    libsoup-2.4
+CUSTOM_VAPIS
+    vapi/javascriptcore.vapi
 )
 # tell cmake what to call the executable we just made
 add_executable(${EXEC_NAME} ${VALA_C})

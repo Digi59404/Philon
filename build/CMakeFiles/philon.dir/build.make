@@ -53,6 +53,10 @@ src/main.c: philon_valac.stamp
 
 src/philonWindow.c: src/main.c
 
+src/docManager.c: src/main.c
+
+src/widgets/webkitView.c: src/main.c
+
 src/widgets/folderList.c: src/main.c
 
 src/widgets/activeList.c: src/main.c
@@ -65,14 +69,17 @@ src/widgets/folderFolder.c: src/main.c
 
 philon_valac.stamp: ../src/main.vala
 philon_valac.stamp: ../src/philonWindow.vala
+philon_valac.stamp: ../src/docManager.vala
+philon_valac.stamp: ../src/widgets/webkitView.vala
 philon_valac.stamp: ../src/widgets/folderList.vala
 philon_valac.stamp: ../src/widgets/activeList.vala
 philon_valac.stamp: ../src/widgets/activeItem.vala
 philon_valac.stamp: ../src/widgets/folderItem.vala
 philon_valac.stamp: ../src/widgets/folderFolder.vala
+philon_valac.stamp: ../vapi/javascriptcore.vapi
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/digi/Projects/Philon/build/CMakeFiles $(CMAKE_PROGRESS_1)
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold "Generating src/main.c;src/philonWindow.c;src/widgets/folderList.c;src/widgets/activeList.c;src/widgets/activeItem.c;src/widgets/folderItem.c;src/widgets/folderFolder.c"
-	/usr/bin/valac -C -b /home/digi/Projects/Philon -d /home/digi/Projects/Philon/build --pkg=gtk+-3.0 --pkg=granite --pkg=webkit2gtk-3.0 -g --save-temps /home/digi/Projects/Philon/src/main.vala /home/digi/Projects/Philon/src/philonWindow.vala /home/digi/Projects/Philon/src/widgets/folderList.vala /home/digi/Projects/Philon/src/widgets/activeList.vala /home/digi/Projects/Philon/src/widgets/activeItem.vala /home/digi/Projects/Philon/src/widgets/folderItem.vala /home/digi/Projects/Philon/src/widgets/folderFolder.vala
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold "Generating src/main.c;src/philonWindow.c;src/docManager.c;src/widgets/webkitView.c;src/widgets/folderList.c;src/widgets/activeList.c;src/widgets/activeItem.c;src/widgets/folderItem.c;src/widgets/folderFolder.c"
+	/usr/bin/valac -C -b /home/digi/Projects/Philon -d /home/digi/Projects/Philon/build --pkg=gtk+-3.0 --pkg=gio-2.0 --pkg=granite --pkg=webkitgtk-3.0 --pkg=libsoup-2.4 -g --save-temps /home/digi/Projects/Philon/src/main.vala /home/digi/Projects/Philon/src/philonWindow.vala /home/digi/Projects/Philon/src/docManager.vala /home/digi/Projects/Philon/src/widgets/webkitView.vala /home/digi/Projects/Philon/src/widgets/folderList.vala /home/digi/Projects/Philon/src/widgets/activeList.vala /home/digi/Projects/Philon/src/widgets/activeItem.vala /home/digi/Projects/Philon/src/widgets/folderItem.vala /home/digi/Projects/Philon/src/widgets/folderFolder.vala /home/digi/Projects/Philon/vapi/javascriptcore.vapi
 	touch /home/digi/Projects/Philon/build/philon_valac.stamp
 
 CMakeFiles/philon.dir/src/main.c.o: CMakeFiles/philon.dir/flags.make
@@ -121,9 +128,55 @@ CMakeFiles/philon.dir/src/philonWindow.c.o.provides: CMakeFiles/philon.dir/src/p
 
 CMakeFiles/philon.dir/src/philonWindow.c.o.provides.build: CMakeFiles/philon.dir/src/philonWindow.c.o
 
+CMakeFiles/philon.dir/src/docManager.c.o: CMakeFiles/philon.dir/flags.make
+CMakeFiles/philon.dir/src/docManager.c.o: src/docManager.c
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/digi/Projects/Philon/build/CMakeFiles $(CMAKE_PROGRESS_4)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building C object CMakeFiles/philon.dir/src/docManager.c.o"
+	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -o CMakeFiles/philon.dir/src/docManager.c.o   -c /home/digi/Projects/Philon/build/src/docManager.c
+
+CMakeFiles/philon.dir/src/docManager.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/philon.dir/src/docManager.c.i"
+	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -E /home/digi/Projects/Philon/build/src/docManager.c > CMakeFiles/philon.dir/src/docManager.c.i
+
+CMakeFiles/philon.dir/src/docManager.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/philon.dir/src/docManager.c.s"
+	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -S /home/digi/Projects/Philon/build/src/docManager.c -o CMakeFiles/philon.dir/src/docManager.c.s
+
+CMakeFiles/philon.dir/src/docManager.c.o.requires:
+.PHONY : CMakeFiles/philon.dir/src/docManager.c.o.requires
+
+CMakeFiles/philon.dir/src/docManager.c.o.provides: CMakeFiles/philon.dir/src/docManager.c.o.requires
+	$(MAKE) -f CMakeFiles/philon.dir/build.make CMakeFiles/philon.dir/src/docManager.c.o.provides.build
+.PHONY : CMakeFiles/philon.dir/src/docManager.c.o.provides
+
+CMakeFiles/philon.dir/src/docManager.c.o.provides.build: CMakeFiles/philon.dir/src/docManager.c.o
+
+CMakeFiles/philon.dir/src/widgets/webkitView.c.o: CMakeFiles/philon.dir/flags.make
+CMakeFiles/philon.dir/src/widgets/webkitView.c.o: src/widgets/webkitView.c
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/digi/Projects/Philon/build/CMakeFiles $(CMAKE_PROGRESS_5)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building C object CMakeFiles/philon.dir/src/widgets/webkitView.c.o"
+	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -o CMakeFiles/philon.dir/src/widgets/webkitView.c.o   -c /home/digi/Projects/Philon/build/src/widgets/webkitView.c
+
+CMakeFiles/philon.dir/src/widgets/webkitView.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/philon.dir/src/widgets/webkitView.c.i"
+	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -E /home/digi/Projects/Philon/build/src/widgets/webkitView.c > CMakeFiles/philon.dir/src/widgets/webkitView.c.i
+
+CMakeFiles/philon.dir/src/widgets/webkitView.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/philon.dir/src/widgets/webkitView.c.s"
+	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -S /home/digi/Projects/Philon/build/src/widgets/webkitView.c -o CMakeFiles/philon.dir/src/widgets/webkitView.c.s
+
+CMakeFiles/philon.dir/src/widgets/webkitView.c.o.requires:
+.PHONY : CMakeFiles/philon.dir/src/widgets/webkitView.c.o.requires
+
+CMakeFiles/philon.dir/src/widgets/webkitView.c.o.provides: CMakeFiles/philon.dir/src/widgets/webkitView.c.o.requires
+	$(MAKE) -f CMakeFiles/philon.dir/build.make CMakeFiles/philon.dir/src/widgets/webkitView.c.o.provides.build
+.PHONY : CMakeFiles/philon.dir/src/widgets/webkitView.c.o.provides
+
+CMakeFiles/philon.dir/src/widgets/webkitView.c.o.provides.build: CMakeFiles/philon.dir/src/widgets/webkitView.c.o
+
 CMakeFiles/philon.dir/src/widgets/folderList.c.o: CMakeFiles/philon.dir/flags.make
 CMakeFiles/philon.dir/src/widgets/folderList.c.o: src/widgets/folderList.c
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/digi/Projects/Philon/build/CMakeFiles $(CMAKE_PROGRESS_4)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/digi/Projects/Philon/build/CMakeFiles $(CMAKE_PROGRESS_6)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building C object CMakeFiles/philon.dir/src/widgets/folderList.c.o"
 	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -o CMakeFiles/philon.dir/src/widgets/folderList.c.o   -c /home/digi/Projects/Philon/build/src/widgets/folderList.c
 
@@ -146,7 +199,7 @@ CMakeFiles/philon.dir/src/widgets/folderList.c.o.provides.build: CMakeFiles/phil
 
 CMakeFiles/philon.dir/src/widgets/activeList.c.o: CMakeFiles/philon.dir/flags.make
 CMakeFiles/philon.dir/src/widgets/activeList.c.o: src/widgets/activeList.c
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/digi/Projects/Philon/build/CMakeFiles $(CMAKE_PROGRESS_5)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/digi/Projects/Philon/build/CMakeFiles $(CMAKE_PROGRESS_7)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building C object CMakeFiles/philon.dir/src/widgets/activeList.c.o"
 	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -o CMakeFiles/philon.dir/src/widgets/activeList.c.o   -c /home/digi/Projects/Philon/build/src/widgets/activeList.c
 
@@ -169,7 +222,7 @@ CMakeFiles/philon.dir/src/widgets/activeList.c.o.provides.build: CMakeFiles/phil
 
 CMakeFiles/philon.dir/src/widgets/activeItem.c.o: CMakeFiles/philon.dir/flags.make
 CMakeFiles/philon.dir/src/widgets/activeItem.c.o: src/widgets/activeItem.c
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/digi/Projects/Philon/build/CMakeFiles $(CMAKE_PROGRESS_6)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/digi/Projects/Philon/build/CMakeFiles $(CMAKE_PROGRESS_8)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building C object CMakeFiles/philon.dir/src/widgets/activeItem.c.o"
 	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -o CMakeFiles/philon.dir/src/widgets/activeItem.c.o   -c /home/digi/Projects/Philon/build/src/widgets/activeItem.c
 
@@ -192,7 +245,7 @@ CMakeFiles/philon.dir/src/widgets/activeItem.c.o.provides.build: CMakeFiles/phil
 
 CMakeFiles/philon.dir/src/widgets/folderItem.c.o: CMakeFiles/philon.dir/flags.make
 CMakeFiles/philon.dir/src/widgets/folderItem.c.o: src/widgets/folderItem.c
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/digi/Projects/Philon/build/CMakeFiles $(CMAKE_PROGRESS_7)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/digi/Projects/Philon/build/CMakeFiles $(CMAKE_PROGRESS_9)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building C object CMakeFiles/philon.dir/src/widgets/folderItem.c.o"
 	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -o CMakeFiles/philon.dir/src/widgets/folderItem.c.o   -c /home/digi/Projects/Philon/build/src/widgets/folderItem.c
 
@@ -215,7 +268,7 @@ CMakeFiles/philon.dir/src/widgets/folderItem.c.o.provides.build: CMakeFiles/phil
 
 CMakeFiles/philon.dir/src/widgets/folderFolder.c.o: CMakeFiles/philon.dir/flags.make
 CMakeFiles/philon.dir/src/widgets/folderFolder.c.o: src/widgets/folderFolder.c
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/digi/Projects/Philon/build/CMakeFiles $(CMAKE_PROGRESS_8)
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/digi/Projects/Philon/build/CMakeFiles $(CMAKE_PROGRESS_10)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building C object CMakeFiles/philon.dir/src/widgets/folderFolder.c.o"
 	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -o CMakeFiles/philon.dir/src/widgets/folderFolder.c.o   -c /home/digi/Projects/Philon/build/src/widgets/folderFolder.c
 
@@ -240,6 +293,8 @@ CMakeFiles/philon.dir/src/widgets/folderFolder.c.o.provides.build: CMakeFiles/ph
 philon_OBJECTS = \
 "CMakeFiles/philon.dir/src/main.c.o" \
 "CMakeFiles/philon.dir/src/philonWindow.c.o" \
+"CMakeFiles/philon.dir/src/docManager.c.o" \
+"CMakeFiles/philon.dir/src/widgets/webkitView.c.o" \
 "CMakeFiles/philon.dir/src/widgets/folderList.c.o" \
 "CMakeFiles/philon.dir/src/widgets/activeList.c.o" \
 "CMakeFiles/philon.dir/src/widgets/activeItem.c.o" \
@@ -251,6 +306,8 @@ philon_EXTERNAL_OBJECTS =
 
 philon: CMakeFiles/philon.dir/src/main.c.o
 philon: CMakeFiles/philon.dir/src/philonWindow.c.o
+philon: CMakeFiles/philon.dir/src/docManager.c.o
+philon: CMakeFiles/philon.dir/src/widgets/webkitView.c.o
 philon: CMakeFiles/philon.dir/src/widgets/folderList.c.o
 philon: CMakeFiles/philon.dir/src/widgets/activeList.c.o
 philon: CMakeFiles/philon.dir/src/widgets/activeItem.c.o
@@ -267,6 +324,8 @@ CMakeFiles/philon.dir/build: philon
 
 CMakeFiles/philon.dir/requires: CMakeFiles/philon.dir/src/main.c.o.requires
 CMakeFiles/philon.dir/requires: CMakeFiles/philon.dir/src/philonWindow.c.o.requires
+CMakeFiles/philon.dir/requires: CMakeFiles/philon.dir/src/docManager.c.o.requires
+CMakeFiles/philon.dir/requires: CMakeFiles/philon.dir/src/widgets/webkitView.c.o.requires
 CMakeFiles/philon.dir/requires: CMakeFiles/philon.dir/src/widgets/folderList.c.o.requires
 CMakeFiles/philon.dir/requires: CMakeFiles/philon.dir/src/widgets/activeList.c.o.requires
 CMakeFiles/philon.dir/requires: CMakeFiles/philon.dir/src/widgets/activeItem.c.o.requires
@@ -280,6 +339,8 @@ CMakeFiles/philon.dir/clean:
 
 CMakeFiles/philon.dir/depend: src/main.c
 CMakeFiles/philon.dir/depend: src/philonWindow.c
+CMakeFiles/philon.dir/depend: src/docManager.c
+CMakeFiles/philon.dir/depend: src/widgets/webkitView.c
 CMakeFiles/philon.dir/depend: src/widgets/folderList.c
 CMakeFiles/philon.dir/depend: src/widgets/activeList.c
 CMakeFiles/philon.dir/depend: src/widgets/activeItem.c
