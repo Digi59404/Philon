@@ -184,7 +184,7 @@ namespace philon {
 		char *c_path = new char[1024];
 		file_path.get_utf8_c_string(c_path, 1023);
 		//FileManager.docview.MarkUnsaved((string)c_path);
-		docManager.window.activeList_i.selected.badge = "UNSAVED";
+		docManager.window.activeNotebook_i.activeList_t.activeList_i.selected.badge = "UNSAVED";
 
 		return new JSCore.Value.string(ctx, file_path);
     }
@@ -197,7 +197,7 @@ namespace philon {
 		char *c_path = new char[1024];
 		file_path.get_utf8_c_string(c_path, 1023);
 		//FileManager.docview.MarkUnsaved((string)c_path);
-		docManager.window.activeList_i.selected.badge = "";
+		docManager.window.activeNotebook_i.activeList_t.activeList_i.selected.badge = "";
 
 		return new JSCore.Value.string(ctx, file_path);
     }

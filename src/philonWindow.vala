@@ -34,6 +34,7 @@ namespace philon {
         public Gtk.HeaderBar 	header;
         public WebKit_View		wbview;
         public activeList		activeList_i;
+        public activeNotebook	activeNotebook_i;
         public folderList		folderList_i;
         public Granite.Widgets.AppMenu 	newButton;
 
@@ -50,39 +51,6 @@ namespace philon {
 			header.title = "Philon";
 			header.show_close_button = true;
 			header.destroy.connect (Gtk.main_quit);
-
-
-			/* Platform Dropdown */
-			Gtk.ListStore list_store = new Gtk.ListStore (2, typeof (string), typeof (int));
-			Gtk.TreeIter iter;
-
-			list_store.append (out iter);
-			list_store.set (iter, 0, "iOS");
-			list_store.append (out iter);
-			list_store.set (iter, 0, "Android");
-			Gtk.ComboBox platformSelection = new Gtk.ComboBox.with_model (list_store);
-
-			Gtk.CellRendererText renderer = new Gtk.CellRendererText ();
-			platformSelection.pack_start (renderer, true);
-			platformSelection.add_attribute (renderer, "text", 0);
-			platformSelection.active = 0;
-
-
-			/* Type Dropdown */
-			Gtk.ListStore list_store2 = new Gtk.ListStore (2, typeof (string), typeof (int));
-			Gtk.TreeIter iter2;
-
-			list_store2.append (out iter2);
-			list_store2.set (iter2, 0, "Emulator Debug", 1, 13);
-			list_store2.append (out iter2);
-			list_store2.set (iter2, 0, "Emulator Release", 1, 17);
-			Gtk.ComboBox modeSelection = new Gtk.ComboBox.with_model (list_store2);
-
-			Gtk.CellRendererText renderer2 = new Gtk.CellRendererText ();
-			modeSelection.pack_start (renderer2, true);
-			modeSelection.add_attribute (renderer2, "text", 0);
-			modeSelection.active = 0;
-
 
 			var accel_group = new Gtk.AccelGroup();
 			
@@ -133,8 +101,6 @@ namespace philon {
 			findReplace.placeholder_text = "Find/Replace";
 
 			header.pack_start(nf_menu);
-			header.pack_start(platformSelection);
-			header.pack_start(modeSelection);
 
 			header.pack_end(newButton);
 			header.pack_end(findReplace);
@@ -143,13 +109,14 @@ namespace philon {
 
 		private Gtk.Widget setupFolderView(){
 			/* Add active Files Source List */
-			activeList_i = new activeList();
+			activeNotebook_i = new activeNotebook();
+
 
 			/* Add folder Source List */
 			folderList_i = new folderList();
 
 			var folderBox = new Granite.Widgets.ThinPaned(Gtk.Orientation.VERTICAL);
- 			folderBox.add1(activeList_i);
+ 			folderBox.add1(activeNotebook_i);
  			folderBox.add2(folderList_i);
 
  			folderBox.set_position(100);
@@ -192,7 +159,7 @@ namespace philon {
 
 	        if (file_chooser.run () == ResponseType.ACCEPT) {
 	            var docName = file_chooser.get_filename();
-	            activeList_i.root.add( new activeItem(this, file_chooser.get_file().get_basename(), file_chooser.get_filename ()));
+	            activeNotebook_i.activeList_t.activeList_i.root.add( new activeItem(this, file_chooser.get_file().get_basename(), file_chooser.get_filename ()));
 	        }
 	        file_chooser.destroy ();
         }

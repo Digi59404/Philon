@@ -1,10 +1,11 @@
 namespace philon {
-	class folderItem : Granite.Widgets.SourceList.Item {
+	class builderItem : Granite.Widgets.SourceList.Item {
+
 		private string path;
 		private philonWindow window;
 		private string data;
 
-		public folderItem(philonWindow window, string name, string path){
+		public builderItem(philonWindow window, string name, string path){
 			this.name = name;
 			this.path = path;
 			this.window = window;
@@ -14,8 +15,9 @@ namespace philon {
 				this.setActive();
 			});
 		}
+
 		public void setActive(){
-			this.window.activeNotebook_i.activeList_t.activeList_i.root.add( new activeItem(this.window, this.name, this.path));
 		}
+
 	}
 }

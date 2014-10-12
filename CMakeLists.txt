@@ -33,8 +33,18 @@ vala_precompile(VALA_C ${EXEC_NAME}
     src/docManager.vala
     src/widgets/webkitView.vala
     src/widgets/folderList.vala
-    src/widgets/activeList.vala
-    src/widgets/activeItem.vala
+    src/widgets/activeNotebook.vala
+    src/widgets/activeList/activeTab.vala
+    src/widgets/activeList/activeList.vala
+    src/widgets/activeList/activeItem.vala
+    
+    src/widgets/builderList/builderTab.vala
+    src/widgets/builderList/builderList.vala
+    src/widgets/builderList/builderItem.vala
+    
+    src/widgets/deploymentList/deploymentTab.vala
+    src/widgets/deploymentList/deploymentList.vala
+    src/widgets/deploymentList/deploymentItem.vala
     src/widgets/folderItem.vala
     src/widgets/folderFolder.vala
 # tell what libraries to use when compiling

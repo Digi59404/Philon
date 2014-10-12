@@ -1,3 +1,0 @@
-# Hashes of file build rules.
-4861e0db8a444f7453cadb66c12037fe philon_valac.stamp
-87ccec12fc89743437708a140229d9a3 src/main.c
