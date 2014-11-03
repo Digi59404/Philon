@@ -12,12 +12,11 @@ namespace philon {
 			this.data = data;
 
 			this.activated.connect(() => {
-				this.setActive();
+
 			});
 		}
 
 		public void setActive(){
-			this.window.wbview.wbview.execute_script("docOpen('"+this.path+"');");
 			this.window.wbview.wbview.execute_script("docOpen('"+this.path+"');");
 		}
 

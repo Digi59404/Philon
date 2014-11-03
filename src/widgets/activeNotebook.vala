@@ -21,10 +21,10 @@ namespace philon {
             this.insert_tab(this.activeList_t, -1);
 
             this.builderList_t = new builderTab();
-            this.insert_tab(this.builderList_t, -1);
+            this.insert_tab(this.builderList_t,-1);
 
             this.deploymentList_t = new deploymentTab();
-            this.insert_tab(this.deploymentList_t, -1);
+            this.insert_tab(this.deploymentList_t,-1);
 
 		}
 	}

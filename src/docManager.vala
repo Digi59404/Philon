@@ -10,6 +10,7 @@ namespace philon {
 		/* Root Method */
 		public static void openFolder(string path, folderList folderlist, philonWindow window){
 			var file = File.new_for_path(path);
+            folderlist.projectList.name = file.get_basename();
 			try {
 				var e = file.enumerate_children(FileAttribute.STANDARD_NAME, 0, new Cancellable());
 				while(true){
@@ -20,9 +21,9 @@ namespace philon {
 					if (files.get_file_type () == FileType.DIRECTORY) {
 						//File subdir = file.resolve_relative_path (files.get_name ());
 						//list_children (subdir,  + " ", cancellable);
-						folderlist.root.add( new folderFolder(window, files.get_name (), path+"/"+files.get_name ()));
+						folderlist.projectList.add( new folderFolder(window, files.get_name (), path+"/"+files.get_name ()));
 					} else {
-						folderlist.root.add( new folderItem(window, files.get_name (), path+"/"+files.get_name ()));
+						folderlist.projectList.add( new folderItem(window, files.get_name (), path+"/"+files.get_name ()));
 					}
 				}
 

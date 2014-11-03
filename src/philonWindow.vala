@@ -53,16 +53,16 @@ namespace philon {
 			header.destroy.connect (Gtk.main_quit);
 
 			var accel_group = new Gtk.AccelGroup();
-			
+
 
 			/* New Icon */
 			Gtk.Menu newModel = new Gtk.Menu ();
 			newModel.set_accel_group(accel_group);
-			
+
 
 			Gtk.MenuItem item_folder = new Gtk.MenuItem.with_label ("Open Folder");
 			item_folder.activate.connect(() =>{
-				this.dialog_openFolder();				
+				this.dialog_openFolder();
 			});
 			newModel.add (item_folder);
 
@@ -97,13 +97,9 @@ namespace philon {
 
 			var nf_menu = new Granite.Widgets.ToolButtonWithMenu(new Gtk.Image.from_icon_name ("media-playback-start", Gtk.IconSize.LARGE_TOOLBAR), "", newModel);
 
-			var findReplace = new Gtk.Entry();
-			findReplace.placeholder_text = "Find/Replace";
-
 			header.pack_start(nf_menu);
 
 			header.pack_end(newButton);
-			header.pack_end(findReplace);
 			instance.set_titlebar(header);
 		}
 
@@ -159,7 +155,7 @@ namespace philon {
 
 	        if (file_chooser.run () == ResponseType.ACCEPT) {
 	            var docName = file_chooser.get_filename();
-	            activeNotebook_i.activeList_t.activeList_i.root.add( new activeItem(this, file_chooser.get_file().get_basename(), file_chooser.get_filename ()));
+        	            activeNotebook_i.activeList_t.activeList_i.root.add(new activeItem(this, file_chooser.get_file().get_basename(), file_chooser.get_filename ()));
 	        }
 	        file_chooser.destroy ();
         }
@@ -171,7 +167,7 @@ namespace philon {
                                       Stock.OPEN, ResponseType.ACCEPT);
 
 	        if (file_chooser.run () == ResponseType.ACCEPT) {
-	        	this.folderList_i.root.clear();
+	        	this.folderList_i.projectList.clear();
 	            var docName = file_chooser.get_filename();
 	            docManager.openFolder(docName, folderList_i, this);
 	            this.folderList_i.refilter();
